@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>模拟搜索</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<link rel="stylesheet" href="css/mui.min.css"> 
+	</head>
+
+	<body>
+		<div class="mui-input-row mui-search">
+			<input type="search" id="searchs" class="mui-input-clear mui-col-sm-7" placeholder="">
+		</div>
+		<!--下拉刷新容器-->
+		<div id="pullrefresh" class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<!--数据列表-->
+				<ul class="mui-table-view mui-table-view-chevron">
+					
+				</ul>
+			</div>
+		</div>
+		<script src="js/mui.min.js"></script>
+		<script>
+			mui.init({
+				pullRefresh: {
+					container: '#pullrefresh',
+					down: {
+						callback: pulldownRefresh
+					},
+					up: {
+						contentrefresh: '正在加载...',
+						callback: pullupRefresh
+					}
+				}
+			});
+			/**
+			 * 下拉刷新具体业务实现
+			 */
+			function pulldownRefresh() {
+				setTimeout(function() {
+					mui.ajax('test.json',{
+						dataType:'jsonp',//服务器返回json格式数据
+						type:'get',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						headers:{'Content-Type':'application/json'},	              
+						success:function(data){
+							datas = JSON.parse(data)
+							var sea = document.getElementById("searchs");
+							var table = document.body.querySelector('.mui-table-view');
+							var cells = document.body.querySelectorAll('.mui-table-view-cell');
+							for(var i = 0; i<datas.length;i++){
+								var li = document.createElement('li');
+								li.className = 'mui-table-view-cell';
+								li.innerHTML = '<a class="mui-navigate-right">' + datas[i].title + '</a>';
+								//下拉刷新，新纪录插到最前面；
+								table.insertBefore(li, table.firstChild);
+							}
+							sea.addEventListener('change',function(){
+								var uls = document.getElementsByTagName('ul')[0];
+								var lis = uls.children;
+								for(var s=0;s<lis.length;s++){
+									lis[s].style.display = 'none';
+									var as = lis[s].children;
+										if(as[0].innerText.indexOf(sea.value) > -1){
+										as[0].parentNode.setAttribute('style','display: block;')
+									}
+								}
+							})
+						},
+						error:function(xhr,type,errorThrown){
+							//异常处理；
+							console.log(type);
+						}
+					});
+					mui('#pullrefresh').pullRefresh().endPulldownToRefresh(); //refresh completed
+				}, 1500);
+			}
+			var count = 0;
+			/**
+			 * 上拉加载具体业务实现
+			 */
+			function pullupRefresh() {
+				setTimeout(function() {
+//					  mui.ajax('test.json',{
+//						dataType:'jsonp',//服务器返回json格式数据
+//						type:'get',//HTTP请求类型
+//						timeout:10000,//超时时间设置为10秒；
+//						headers:{'Content-Type':'application/json'},	              
+//						success:function(data){
+//							datas = JSON.parse(data)
+//							var sea = document.getElementById("searchs");
+//							var table = document.body.querySelector('.mui-table-view');
+//							var cells = document.body.querySelectorAll('.mui-table-view-cell');
+//							for(var i = 0; i<datas.length;i++){
+//								var li = document.createElement('li');
+//								li.className = 'mui-table-view-cell';
+//								li.innerHTML = '<a class="mui-navigate-right">' + datas[i].title + '</a>';
+//								//下拉刷新，新纪录插到最前面；
+//								table.insertBefore(li, table.firstChild);
+//							}
+//							sea.addEventListener('change',function(){
+//								var uls = document.getElementsByTagName('ul')[0];
+//								var lis = uls.children;
+//								for(var s=0;s<lis.length;s++){
+//									lis[s].style.display = 'none';
+//									var as = lis[s].children;
+//										if(as[0].innerText.indexOf(sea.value) > -1){
+//										as[0].parentNode.setAttribute('style','display: block;')
+//									}
+//								}
+//							})
+//						},
+//						error:function(xhr,type,errorThrown){
+//							//异常处理；
+//							console.log(type);
+//						}
+//					});
+				}, 1500);
+			}
+			if (mui.os.plus) {
+				mui.plusReady(function() {
+					setTimeout(function() {
+						mui('#pullrefresh').pullRefresh().pullupLoading();
+					}, 1000);
+
+				});
+			} else {
+				mui.ready(function() {
+					mui('#pullrefresh').pullRefresh().pullupLoading();
+				});
+			}
+		</script>
+	</body>
+
+</html>
